@@ -22,6 +22,7 @@ class TestUISearch(BaseCase):
         5. Проверка на наличие сайта компании в первом результате выдачи.
         """
     )
+    # @pytest.mark.xfail(reason="Открывается страница с капчей при использовании Selenium Webdriver.")
     def test_search_site_in_search_engine(self, request: FixtureRequest):
         with allure.step("Открытие главное страницы Яндекс."):
             main_page = request.getfixturevalue('main_page')
@@ -46,6 +47,7 @@ class TestUIPicture(BaseCase):
         7. Проверка на соответствие изначально открытой картинки и картинки, полученной при возвращении. 
         """
     )
+    # @pytest.mark.xfail(reason="Открывается страница с капчей при использовании Selenium Webdriver.")
     def test_picture(self, request: FixtureRequest):
         with allure.step("Открытие главное страницы Яндекс."):
             main_page = request.getfixturevalue('main_page')

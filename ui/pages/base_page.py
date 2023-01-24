@@ -14,7 +14,7 @@ class PageNotOpenedException(Exception):
 
 
 class BasePage:
-    WAITING_TIME = 3
+    WAITING_TIME = 10
     url = 'https://ya.ru/'
 
     def __init__(self, driver):

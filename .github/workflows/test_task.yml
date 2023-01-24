@@ -1,0 +1,34 @@
+name: test_task
+on:
+  push:
+    branches:
+      - 'main'
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Extract branch name
+        shell: bash
+        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+        id: extract_branch
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.9"
+      - name: Information about directory
+        run: |
+          echo "PWD: $(pwd)"
+          ls -al
+      - name: Install chromedriver locally
+        uses: nanasess/setup-chromedriver@v1
+        with:
+          chromedriver-version: '109.0.5414.74'
+      - name: Install dependencies
+        run: |
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+      - name: Test main with pytest and pytest-xdist
+        if: ${{ github.ref_name == 'main' }}
+        timeout-minutes: 3
+        run: |
+          pytest -n2 --headless
