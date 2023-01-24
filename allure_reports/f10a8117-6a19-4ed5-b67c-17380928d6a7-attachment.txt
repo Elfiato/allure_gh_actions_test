@@ -1,0 +1,2 @@
+WARNING - javascript
+https://yandex.ru/captchapgrd 0 It is recommended that a robustness level be specified. Not specifying the robustness level could result in unexpected behavior.
