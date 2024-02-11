@@ -22,6 +22,7 @@ class MainPage(BasePage):
     @allure.step('Переход на страницу картинок с главной страницы.')
     def go_to_picture_page(self):
         with allure.step('Нажатие на кнопку всех сервисов.'):
+            self.get_clickable_element(*self.locators.SEARCH_TEXT_FORM).click()
             self.get_clickable_element(*self.locators.ALL_SERVICES).click()
         with allure.step('Нажатие на кнопку картинок.'):
             self.get_clickable_element(*self.locators.PICTURE_SECTION).click()

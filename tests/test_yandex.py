@@ -28,6 +28,7 @@ class TestUISearch(BaseCase):
             main_page = request.getfixturevalue('main_page')
             main_page.is_opened()
         result_page = main_page.search_text(TEXT)
+        result_page.close_modal_window()
         result_page.is_requirement_url_in_first_link(URL)
 
 

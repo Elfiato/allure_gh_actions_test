@@ -18,7 +18,7 @@ def pytest_addoption(parser):
 @pytest.fixture(scope='function')
 def temp_dir(request):
     test_name = '_'.join(request._pyfuncitem.nodeid.split(':'))
-    test_dir = os.path.join('/tmp/tests', test_name)
+    test_dir = os.path.join('../tmp/tests', test_name)
     if os.path.exists(test_dir):
         shutil.rmtree(test_dir)
     os.makedirs(test_dir)

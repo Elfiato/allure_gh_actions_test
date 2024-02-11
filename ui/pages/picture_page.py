@@ -5,7 +5,7 @@ from ui.locators.basic_locators import PicturePageLocators
 
 
 class PicturePage(BasePage):
-    url = 'https://yandex.ru/images/'
+    url = 'https://ya.ru/images/'
     locators = PicturePageLocators()
 
     @allure.step('Открытие первой категории картинок.')
