@@ -29,7 +29,7 @@ class TestUISearch(BaseCase):
             main_page.is_opened()
         result_page = main_page.search_text(TEXT)
         result_page.close_modal_window()
-        result_page.is_requirement_url_in_first_link(URL)
+        result_page.check_requirement_url_in_first_link(URL)
 
 
 @pytest.mark.UI
