@@ -3,27 +3,99 @@ on:
   push:
     branches:
       - 'main'
+  workflow_dispatch:
+    inputs:
+      deployment_target:
+        description: Manually start
+        required: true
+        default: 'all'
+        options:
+          - all
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
 jobs:
+  download-history:
+    runs-on: ubuntu-latest
+    name: Download history
+    steps:
+      - name: setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+      - run: echo $(pwd)
+      - run: echo $(ls -la)
+      - name: Download artifacts
+        run: >
+          ARTIFACT_ID=$(curl -L
+          -H "Accept: application/vnd.github+json"
+          -H "X-GitHub-Api-Version: 2022-11-28"
+          "https://api.github.com/repos/Elfiato/allure_gh_actions_test/actions/artifacts?name=allure-results"
+          | python -c "import sys, json; print(json.load(sys.stdin)['artifacts'][0]['id']);")
+          &&
+          echo $ARTIFACT_ID
+          &&
+          curl -L
+          -H "Accept: application/vnd.github+json"
+          -H "Authorization: Bearer ${{ secrets.TOKEN }}"
+          -H "X-GitHub-Api-Version: 2022-11-28"
+          "https://api.github.com/repos/Elfiato/allure_gh_actions_test/actions/artifacts/$ARTIFACT_ID/zip"
+          -o artifacts.zip
+#          &&
+#          REPORT_ID=$(curl -L
+#          -H "Accept: application/vnd.github+json"
+#          -H "X-GitHub-Api-Version: 2022-11-28"
+#          "https://api.github.com/repos/Elfiato/allure_gh_actions_test/actions/artifacts?name=github-pages"
+#          | python -c "import sys, json; print(json.load(sys.stdin)['artifacts'][0]['id']);")
+#          &&
+#          echo $REPORT_ID
+#          &&
+#          curl -L
+#          -H "Accept: application/vnd.github+json"
+#          -H "Authorization: Bearer ${{ secrets.TOKEN }}"
+#          -H "X-GitHub-Api-Version: 2022-11-28"
+#          "https://api.github.com/Elfiato/allure_gh_actions_test/actions/artifacts/$REPORT_ID/zip"
+#          -o pages.zip
+#          &&
+#          ls -la
+      - run: mkdir allure-results
+      - uses: edgarrc/action-7z@v1
+        with:
+          args: 7z e artifacts.zip allure-results
+#      - run: mkdir old_pages pages_history
+#      - uses: edgarrc/action-7z@v1
+#        with:
+#          args: 7z e pages.zip old_pages
+#      - run: tar -xvf old_pages/artifact.tar -C pages_history
+#      - run: cp pages_history/history/* allure-results && cp -r pages_history/history allure-results
+      - name: Store allure history
+        uses: actions/upload-artifact@v3
+        with:
+          name: allure-results
+          path:
+            allure-results
+          retention-days: 1
+
   tests:
     runs-on: ubuntu-latest
+    needs: download-history
     steps:
-      - uses: actions/checkout@v2
-      - name: Extract branch name
-        shell: bash
-        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
-        id: extract_branch
-      - name: Set up Python 3.9
-        uses: actions/setup-python@v2
+      - uses: actions/checkout@v4
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v4
         with:
-          python-version: "3.9"
+          python-version: "3.11"
       - name: Information about directory
         run: |
           echo "PWD: $(pwd)"
           ls -al
       - name: Install chromedriver locally
-        uses: nanasess/setup-chromedriver@v1
+        uses: nanasess/setup-chromedriver@v2
         with:
-          chromedriver-version: '109.0.5414.74'
+          chromedriver-version: '121.0.6167.185'
       - name: Install dependencies
         run: |
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
@@ -31,4 +103,50 @@ jobs:
         if: ${{ github.ref_name == 'main' }}
         timeout-minutes: 3
         run: |
-          pytest -n2 --headless
+          pytest -n2 --headless --alluredir=allure-results
+        continue-on-error: true
+      - name: all
+        if: "github.event.inputs.deployment_target == 'all'"
+        run: pytest -n2 --headless --alluredir=allure-results
+        continue-on-error: true
+      - name: Store allure results
+        uses: actions/upload-artifact@v3
+        with:
+          name: allure-results
+          path:
+            allure-results
+          retention-days: 1
+
+  generate-report:
+    runs-on: ubuntu-latest
+    needs: tests
+    name: Generate report
+    steps:
+      - uses: actions/setup-java@v3
+        with:
+          distribution: 'microsoft' # See 'Supported distributions' for available options
+          java-version: '17'
+      - run: sudo wget https://github.com/allure-framework/allure2/releases/download/2.27.0/allure-2.27.0.tgz && sudo tar -zxvf allure-2.27.0.tgz -C /opt/ && sudo ln -s /opt/allure-2.27.0/bin/allure /usr/bin/allure
+      - name: Download all workflow run artifacts
+        uses: actions/download-artifact@v3
+      - run: allure generate -c allure-results -o _site
+      - name: Store generated report
+        uses: actions/upload-artifact@v3
+        with:
+          name: _site
+          path:
+            _site
+          retention-days: 1
+
+  publish-report:
+    runs-on: ubuntu-latest
+    needs: generate-report
+    name: Report publication
+    steps:
+      - name: Download all workflow run artifacts
+        uses: actions/download-artifact@v3
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v2
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v1.2.9

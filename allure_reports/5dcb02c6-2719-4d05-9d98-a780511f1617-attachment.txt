@@ -1,8 +1,0 @@
-2023-01-24 22:33:43,738 - base_page.py - INFO - MainPage page is opening...
-2023-01-24 22:33:43,738 - base_page.py - INFO - Checking page with url:https://ya.ru/ is opened.
-2023-01-24 22:33:43,740 - base_page.py - INFO - Input text: Тензор to field with locator: css selector:#text.
-2023-01-24 22:33:43,740 - base_page.py - INFO - Getting element with locator: css selector: #text.
-2023-01-24 22:33:43,796 - base_page.py - INFO - Checking is element visible with locator: xpath: //*[contains(@id, "suggest-list")].
-2023-01-24 22:33:43,813 - base_page.py - INFO - Getting element with locator: css selector: #text.
-2023-01-24 22:33:44,373 - base_page.py - INFO - ResultPage page is opening...
-2023-01-24 22:33:44,373 - base_page.py - INFO - Checking is element present with locator: css selector: #search-result.
