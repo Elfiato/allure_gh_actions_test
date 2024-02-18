@@ -44,33 +44,10 @@ jobs:
           -H "X-GitHub-Api-Version: 2022-11-28"
           "https://api.github.com/repos/Elfiato/allure_gh_actions_test/actions/artifacts/$ARTIFACT_ID/zip"
           -o artifacts.zip
-#          &&
-#          REPORT_ID=$(curl -L
-#          -H "Accept: application/vnd.github+json"
-#          -H "X-GitHub-Api-Version: 2022-11-28"
-#          "https://api.github.com/repos/Elfiato/allure_gh_actions_test/actions/artifacts?name=github-pages"
-#          | python -c "import sys, json; print(json.load(sys.stdin)['artifacts'][0]['id']);")
-#          &&
-#          echo $REPORT_ID
-#          &&
-#          curl -L
-#          -H "Accept: application/vnd.github+json"
-#          -H "Authorization: Bearer ${{ secrets.TOKEN }}"
-#          -H "X-GitHub-Api-Version: 2022-11-28"
-#          "https://api.github.com/Elfiato/allure_gh_actions_test/actions/artifacts/$REPORT_ID/zip"
-#          -o pages.zip
-#          &&
-#          ls -la
       - run: mkdir allure-results
       - uses: edgarrc/action-7z@v1
         with:
           args: 7z e artifacts.zip allure-results
-#      - run: mkdir old_pages pages_history
-#      - uses: edgarrc/action-7z@v1
-#        with:
-#          args: 7z e pages.zip old_pages
-#      - run: tar -xvf old_pages/artifact.tar -C pages_history
-#      - run: cp pages_history/history/* allure-results && cp -r pages_history/history allure-results
       - name: Store allure history
         uses: actions/upload-artifact@v3
         with:
@@ -103,11 +80,11 @@ jobs:
         if: ${{ github.ref_name == 'main' }}
         timeout-minutes: 3
         run: |
-          pytest -n2 --headless --alluredir=allure-results
+          pytest --headless --alluredir=allure-results
         continue-on-error: true
       - name: all
         if: "github.event.inputs.deployment_target == 'all'"
-        run: pytest -n2 --headless --alluredir=allure-results
+        run: pytest --headless --alluredir=allure-results
         continue-on-error: true
       - name: Store allure results
         uses: actions/upload-artifact@v3
